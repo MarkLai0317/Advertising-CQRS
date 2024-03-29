@@ -48,7 +48,7 @@ func (s *AdSynchronizer) SyncDB() error {
 	}
 
 	// store the new data that is not in QueryDB
-	newAdSlice := make([]*domain.Advertisement, 1000)
+	newAdSlice := make([]*domain.Advertisement, 0, 1000)
 	for _, ad := range commandDBAdSlice {
 		log.Printf("command ad id: %v\n", ad.Id)
 		if _, ok := s.ExistAdSet[ad.Id]; !ok {
