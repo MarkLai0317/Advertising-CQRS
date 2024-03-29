@@ -49,7 +49,7 @@ func (db *MongoQueryDB) Read() ([]*domain.Advertisement, error) {
 	defer cancel()
 	collection := db.mongoClient.Database("advertising").Collection(db.collection)
 
-	cursor, err := collection.Find(ctx, bson.D{}, options.Find())
+	cursor, err := collection.Find(ctx, bson.D{})
 	if err != nil {
 		return nil, fmt.Errorf("error finding advertisement: %w", err)
 	}
