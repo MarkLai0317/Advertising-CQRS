@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/MarkLai0317/Advertising-CQRS/domain"
@@ -18,14 +19,19 @@ type MongoCommandDB struct {
 func NewMongoCommandDB(uri, collection string) (*MongoCommandDB, *mongo.Client, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
-	return &MongoCommandDB{mongoClient: client}, client, err
+	if err != nil {
+		return nil, nil, fmt.Errorf("error connecting to mongo: %w", err)
+
+	}
+	return &MongoCommandDB{mongoClient: client}, client, nil
 }
 
 func (db *MongoCommandDB) Read() ([]*domain.Advertisement, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	collection := db.mongoClient.Database("ad").Collection(db.collection)
+	collection := db.mongoClient.Database("advertising").Collection(db.collection)
 
 	now := time.Now()
 	filter := bson.D{
