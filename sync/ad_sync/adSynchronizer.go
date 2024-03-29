@@ -56,6 +56,8 @@ func (s *AdSynchronizer) SyncDB() error {
 			log.Printf("new ad id: %v\n", ad.Id)
 		}
 	}
+
+	log.Printf("newAdSlice: %v\n", newAdSlice)
 	// write the new data to QueryDB
 	if err := s.queryDB.Write(newAdSlice); err != nil {
 		return fmt.Errorf("err writing QueryDB in SyncDB: %w", err)
