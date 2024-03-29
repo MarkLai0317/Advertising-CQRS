@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/MarkLai0317/Advertising-CQRS/domain"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -48,7 +49,7 @@ func (db *MongoQueryDB) Read() ([]*domain.Advertisement, error) {
 	defer cancel()
 	collection := db.mongoClient.Database("advertising").Collection(db.collection)
 
-	cursor, err := collection.Find(ctx, nil)
+	cursor, err := collection.Find(ctx, bson.D{})
 	if err != nil {
 		return nil, fmt.Errorf("error finding advertisement: %w", err)
 	}

@@ -72,7 +72,7 @@ func (its *MongoIntegrationTestSuite) TestMongoQueryDB_Write() {
 	})
 	its.Assert().NoError(err)
 	// verify
-	cursor, err := its.testMongoClient.Database("advertising").Collection("active_advertisement").Find(context.Background(), nil)
+	cursor, err := its.testMongoClient.Database("advertising").Collection("active_advertisement").Find(context.Background(), bson.D{})
 	its.Assert().NoError(err)
 	var adSlice []*domain.Advertisement
 	err = cursor.All(context.Background(), &adSlice)
