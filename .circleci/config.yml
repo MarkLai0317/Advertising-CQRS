@@ -1,43 +1,105 @@
-# Couldn't automatically generate a config from your source code.
-# This is a generic template to serve as a base for your custom config
-# See: https://circleci.com/docs/configuration-reference
+# This config was automatically generated from your source code
+# Stacks detected: deps:go:.
 version: 2.1
+
+
+
+
 jobs:
-  test:
+  test-go:
+   
+    parameters:
+      head_branch:
+        type: string
+        default: ""
+      target_branch:
+        type: string
+        default: ""
+    # Install go modules and run tests
     docker:
-      - image: cimg/base:stable
+      - image: cimg/go:1.21.6
+      - image: laimark/advertising:test-db
     steps:
       - checkout
-      # Replace this with a real test runner invocation
+      - restore_cache:
+          key: go-mod-{{ checksum "go.sum" }}
       - run:
-          name: Run tests
-          command: echo 'replace me with real tests!' && false
-  build:
+          name: Download Go modules
+          command: go mod download
+      - run:
+          name: Print go mod help instructions
+          command: "echo \"go mod download will fail if you have private repositories \nOne way to fix this for private go modules that are hosted in github:\n  1. Add a GITHUB_TOKEN and GITHUB_USER to an org context. Please refer to https://circleci.com/docs/contexts/ for more informaiton on how to use contexts.\n  2. Add a .circleci/config.yml to your repository or use this config.yml as a starting template\n  3. Configure the jobs to use the newly created context which includes GITHUB_TOKEN and GITHUB_USER  \n  4. Before downloading the modules you will need to add a step to execute \\\"go env -w GOPRIVATE=github.com/<OrgNameHere>\\\". \n\tThis allows go mod to install private repos under OrgNameHere.\n  5. You will also need to run \\\"git config --global url.\\\"https://$GITHUB_USER:$GITHUB_TOKEN@github.com/<OrgNameHere>/\\\".insteadOf \\\"https://github.com/<OrgNameHere>/\\\"\\\"\n  6. Finally include the \\\"go mod download\\\" it should be able to fetch your private libraries now. \nFor gitlab private go modules, follow the same instructions as above but include your GITLAB_TOKEN and GITLAB_USER.\nThen use gitlab.com instead of github.com in steps 4 and 5.\nSee https://go.dev/ref/mod#private-modules for more details.\""
+          when: on_fail
+      - save_cache:
+          key: go-mod-{{ checksum "go.sum" }}
+          paths:
+            - /home/circleci/go/pkg/mod
+
+         # Optional: Install dockerize or a similar tool to wait for the database to be ready
+      - run:
+          name: Install dockerize
+          command: |
+            sudo wget https://github.com/jwilder/dockerize/releases/download/v0.6.1/dockerize-linux-amd64-v0.6.1.tar.gz
+            sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-v0.6.1.tar.gz
+            sudo rm dockerize-linux-amd64-v0.6.1.tar.gz
+
+      - run:
+          name: Wait for DB
+          command: dockerize -wait tcp://localhost:27017 -timeout 20s
+            
+      - run:
+          name: Run integration tests
+          command: gotestsum --format testname --junitfile junit.xml -- -gcflags=all=-l -p 1 -v -cover ./...
+      - store_test_results:
+          path: .
+      
+  build-and-deploy:
     docker:
-      - image: cimg/base:stable
+      - image: docker:25.0.3  # Docker CLI for building Docker image
     steps:
       - checkout
-      # Replace this with steps to build a package, or executable
+      # Step 2: Build Docker image
       - run:
-          name: Build an artifact
-          command: touch example.txt
-      - store_artifacts:
-          path: example.txt
+          name: Build Docker image
+          command: |
+            docker build -t laimark/advertising:latest .
+            docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
+            docker push laimark/advertising:latest
+      
+      # Step 3: Deploy to Kubernetes
+      - run:
+          name: Deploy to Kubernetes
+          command: |
+            kubectl apply -f your-kubernetes-deployment.yaml
   deploy:
     docker:
-      - image: cimg/base:stable
+      - image: google/cloud-sdk
     steps:
-      # Replace this with steps to deploy to users
+      - checkout
       - run:
-          name: deploy
-          command: '#e.g. ./deploy.sh'
+          name: Install kubectl
+          command: gcloud components install kubectl
+      - run:
+          name: Set Up GCP Credentials
+          command: |
+            echo $GOOGLE_SERVICE_ACCOUNT_KEY > ${HOME}/gcp-key.json
+            gcloud auth activate-service-account --key-file=${HOME}/gcp-key.json
+      - run:
+          name: Configure kubectl
+          command: |
+            gcloud container clusters get-credentials [CLUSTER_NAME] --zone [ZONE] --project [PROJECT_ID]
+      - run:
+          name: Deploy to Kubernetes
+          command: |
+            kubectl apply -f [YOUR_K8S_DEPLOYMENT_FILE.yaml]
 workflows:
-  example:
+  build-and-test:
     jobs:
-      - test
-      - build:
-          requires:
-            - test
-      - deploy:
-          requires:
-            - test
+      - test-go:
+         filters:
+            branches:
+              only:
+                - main
+    # # - deploy:
+    # #     requires:
+    #       - test-go
