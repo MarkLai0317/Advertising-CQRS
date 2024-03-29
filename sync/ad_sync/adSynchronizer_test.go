@@ -18,7 +18,7 @@ type AdSynchronizerIntegrationTestSuite struct {
 	suite.Suite
 }
 
-func TestMongoIntegrationTestSuite(t *testing.T) {
+func TestAdSynchronizerIntegrationTestSuite(t *testing.T) {
 	suite.Run(t, &AdSynchronizerIntegrationTestSuite{})
 }
 
@@ -60,7 +60,7 @@ func (its *AdSynchronizerIntegrationTestSuite) TestAdSynchronizer_SyncDB_active_
 	adSynchronizer.SyncDB()
 
 	//verify
-	cursor, err := its.testMongoClient.Database("advertising").Collection("active_advertisement").Find(context.Background(), nil)
+	cursor, err := its.testMongoClient.Database("advertising").Collection("active_advertisement").Find(context.Background(), bson.D{})
 	its.Assert().NoError(err)
 	var adSlice []*domain.Advertisement
 	err = cursor.All(context.Background(), &adSlice)
@@ -100,7 +100,7 @@ func (its *AdSynchronizerIntegrationTestSuite) TestAdSynchronizer_SyncDB_active_
 	adSynchronizer.SyncDB()
 
 	//verify
-	cursor, err := its.testMongoClient.Database("advertising").Collection("active_advertisement").Find(context.Background(), nil)
+	cursor, err := its.testMongoClient.Database("advertising").Collection("active_advertisement").Find(context.Background(), bson.D{})
 	its.Assert().NoError(err)
 	var adSlice []*domain.Advertisement
 	err = cursor.All(context.Background(), &adSlice)
