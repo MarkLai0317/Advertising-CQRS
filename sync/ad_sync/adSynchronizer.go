@@ -2,6 +2,7 @@ package ad_sync
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/MarkLai0317/Advertising-CQRS/domain"
 )
@@ -37,6 +38,7 @@ func (s *AdSynchronizer) SyncDB() error {
 	s.ExistAdSet = make(map[string]*domain.Advertisement)
 	for _, ad := range queryDBAdSlice {
 		s.ExistAdSet[ad.Id] = ad
+		log.Printf("ad id: %v\n", ad.Id)
 	}
 
 	// read new active data from CommandDBq
@@ -48,8 +50,10 @@ func (s *AdSynchronizer) SyncDB() error {
 	// store the new data that is not in QueryDB
 	newAdSlice := make([]*domain.Advertisement, 1000)
 	for _, ad := range commandDBAdSlice {
+		log.Printf("command ad id: %v\n", ad.Id)
 		if _, ok := s.ExistAdSet[ad.Id]; !ok {
 			newAdSlice = append(newAdSlice, ad)
+			log.Printf("new ad id: %v\n", ad.Id)
 		}
 	}
 	// write the new data to QueryDB
