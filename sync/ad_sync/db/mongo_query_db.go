@@ -25,7 +25,7 @@ func NewMongoQueryDB(uri, collection string) (*MongoQueryDB, *mongo.Client, erro
 		return nil, nil, fmt.Errorf("error connecting to mongo: %w", err)
 
 	}
-	return &MongoQueryDB{mongoClient: client}, client, nil
+	return &MongoQueryDB{mongoClient: client, collection: collection}, client, nil
 }
 
 func (db *MongoQueryDB) Write(adSlice []*domain.Advertisement) error {

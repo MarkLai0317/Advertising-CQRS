@@ -92,24 +92,14 @@ func (its *MongoIntegrationTestSuite) TestMongoQueryDB_Read() {
 	_, err = its.testMongoClient.Database("advertising").Collection("active_advertisement").InsertOne(context.Background(), bson.D{{"_id", "3"}, {"startAt", time.Now().Add(-time.Hour)}, {"endAt", time.Now().Add(time.Hour)}})
 	its.Assert().NoError(err)
 
-	cursor, err := its.testMongoClient.Database("advertising").Collection("active_advertisement").Find(context.Background(), bson.D{})
+	db, mongoClient, err := NewMongoQueryDB("mongodb://mark:markpwd@localhost:27017", "active_advertisement")
 	its.Assert().NoError(err)
-	var adSlice []*domain.Advertisement
-	err = cursor.All(context.Background(), &adSlice)
+	defer mongoClient.Disconnect(context.Background())
+	// test
+	adSlice, err := db.Read()
 	its.Assert().NoError(err)
 	its.Assert().Len(adSlice, 3)
 	its.Assert().Equal("1", adSlice[0].Id)
 	its.Assert().Equal("2", adSlice[1].Id)
 	its.Assert().Equal("3", adSlice[2].Id)
-
-	// db, mongoClient, err := NewMongoQueryDB("mongodb://mark:markpwd@localhost:27017", "active_advertisement")
-	// its.Assert().NoError(err)
-	// defer mongoClient.Disconnect(context.Background())
-	// // test
-	// adSlice, err := db.Read()
-	// its.Assert().NoError(err)
-	// its.Assert().Len(adSlice, 3)
-	// its.Assert().Equal("1", adSlice[0].Id)
-	// its.Assert().Equal("2", adSlice[1].Id)
-	// its.Assert().Equal("3", adSlice[2].Id)
 }

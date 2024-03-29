@@ -25,7 +25,7 @@ func NewMongoCommandDB(uri, collection string) (*MongoCommandDB, *mongo.Client, 
 		return nil, nil, fmt.Errorf("error connecting to mongo: %w", err)
 
 	}
-	return &MongoCommandDB{mongoClient: client}, client, nil
+	return &MongoCommandDB{mongoClient: client, collection: collection}, client, nil
 }
 
 func (db *MongoCommandDB) Read() ([]*domain.Advertisement, error) {
