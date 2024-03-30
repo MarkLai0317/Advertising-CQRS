@@ -44,8 +44,8 @@ func (db *MongoQueryDB) Write(adSlice []*domain.Advertisement) error {
 	return nil
 }
 
-func (db *MongoQueryDB) Read() ([]*domain.Advertisement, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+func (db *MongoQueryDB) Read(parentCtx context.Context) ([]*domain.Advertisement, error) {
+	ctx, cancel := context.WithTimeout(parentCtx, 10*time.Second)
 	defer cancel()
 	collection := db.mongoClient.Database("advertising").Collection(db.collection)
 

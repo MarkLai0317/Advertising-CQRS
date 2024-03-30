@@ -1,4 +1,4 @@
-package sync
+package db_sync
 
 import (
 	"time"

@@ -28,8 +28,8 @@ func NewMongoCommandDB(uri, collection string) (*MongoCommandDB, *mongo.Client, 
 	return &MongoCommandDB{mongoClient: client, collection: collection}, client, nil
 }
 
-func (db *MongoCommandDB) Read() ([]*domain.Advertisement, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+func (db *MongoCommandDB) Read(parentCtx context.Context) ([]*domain.Advertisement, error) {
+	ctx, cancel := context.WithTimeout(parentCtx, 10*time.Second)
 	defer cancel()
 	collection := db.mongoClient.Database("advertising").Collection(db.collection)
 

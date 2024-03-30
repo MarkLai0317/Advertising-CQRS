@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/MarkLai0317/Advertising-CQRS/db_sync/ad_sync/db"
 	"github.com/MarkLai0317/Advertising-CQRS/domain"
-	"github.com/MarkLai0317/Advertising-CQRS/sync/ad_sync/db"
 	"github.com/stretchr/testify/suite"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"

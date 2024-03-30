@@ -51,7 +51,7 @@ func (its *MongoIntegrationTestSuite) TestMongoCommandDB_Read() {
 	its.Assert().NoError(err)
 	defer mongoClient.Disconnect(context.Background())
 	// test
-	adSlice, err := db.Read()
+	adSlice, err := db.Read(context.Background())
 	its.Assert().NoError(err)
 	its.Assert().Len(adSlice, 3)
 	its.Assert().Equal("1", adSlice[0].Id)
@@ -96,7 +96,7 @@ func (its *MongoIntegrationTestSuite) TestMongoQueryDB_Read() {
 	its.Assert().NoError(err)
 	defer mongoClient.Disconnect(context.Background())
 	// test
-	adSlice, err := db.Read()
+	adSlice, err := db.Read(context.Background())
 	its.Assert().NoError(err)
 	its.Assert().Len(adSlice, 3)
 	its.Assert().Equal("1", adSlice[0].Id)
