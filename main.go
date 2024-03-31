@@ -26,20 +26,20 @@ func main() {
 	commandDBColName := os.Getenv("COMMAND_DB_COL_NAME")
 	commandDB, _, err := db.NewMongoCommandDB(commandDBUrl, dbName, commandDBColName)
 	if err != nil {
-		panic(err)
+		log.Fatalf("Error connecting to command db: %s", err)
 	}
 	queryDBUrl := os.Getenv("QUERY_DB_URL")
 	queryDBColName := os.Getenv("QUERY_DB_COL_NAME")
 	queryDB, _, err := db.NewMongoQueryDB(queryDBUrl, dbName, queryDBColName)
 	if err != nil {
-		panic(err)
+		log.Fatalf("Error connecting to query db: %s", err)
 	}
 	synchrorizer := ad_sync.NewAdSynchronizor(commandDB, queryDB)
 
 	// sync db every X seconds
 	secNum, err := strconv.Atoi(os.Getenv("INTERVAL_SYNC_DB"))
 	if err != nil {
-		panic(err)
+		log.Fatalf("Error decode INTERVAL_SYNC_DB: %s", err)
 	}
 
 	wg := &sync.WaitGroup{}
