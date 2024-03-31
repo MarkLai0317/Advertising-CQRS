@@ -72,7 +72,7 @@ jobs:
       - run:
           name: Deploy to VM
           command: |
-             ssh -o StrictHostKeyChecking=no laimark9003173@35.234.12.24 "docker pull laimark/advertising:syncer; docker rm -f syncer; docker run --name syncer -v ~/.sync_env:/app/.env --net clustur_network -d laimark/advertising:syncer; docker image prune -f"
+             ssh -o StrictHostKeyChecking=no laimark9003173@35.234.12.24 "docker pull laimark/advertising:syncer; docker rm -f syncer; docker run --name syncer -v ~/.sync_env:/app/.env --net cluster_network -d laimark/advertising:syncer; docker image prune -f"
 
   # deploy:
   #   docker:
