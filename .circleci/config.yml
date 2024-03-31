@@ -62,36 +62,37 @@ jobs:
       - run:
           name: Build Docker image
           command: |
-            docker build -t laimark/advertising:latest .
+            docker build -t laimark/advertising:cqrs .
             docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
-            docker push laimark/advertising:latest
+            docker push laimark/advertising:cqrs
       
       # Step 3: Deploy to Kubernetes
       - run:
-          name: Deploy to Kubernetes
+          name: Deploy to VM
           command: |
-            kubectl apply -f your-kubernetes-deployment.yaml
-  deploy:
-    docker:
-      - image: google/cloud-sdk
-    steps:
-      - checkout
-      - run:
-          name: Install kubectl
-          command: gcloud components install kubectl
-      - run:
-          name: Set Up GCP Credentials
-          command: |
-            echo $GOOGLE_SERVICE_ACCOUNT_KEY > ${HOME}/gcp-key.json
-            gcloud auth activate-service-account --key-file=${HOME}/gcp-key.json
-      - run:
-          name: Configure kubectl
-          command: |
-            gcloud container clusters get-credentials [CLUSTER_NAME] --zone [ZONE] --project [PROJECT_ID]
-      - run:
-          name: Deploy to Kubernetes
-          command: |
-            kubectl apply -f [YOUR_K8S_DEPLOYMENT_FILE.yaml]
+             ssh laimark9003173@35.234.12.24 "docker pull laimark/advertising:cqrs; docker rm -f syncer; docker run -v ~/.sync_env:/app/.env -d laimark/advertising:syncer; docker image prune -f"
+
+  # deploy:
+  #   docker:
+  #     - image: google/cloud-sdk
+  #   steps:
+  #     - checkout
+  #     - run:
+  #         name: Install kubectl
+  #         command: gcloud components install kubectl
+  #     - run:
+  #         name: Set Up GCP Credentials
+  #         command: |
+  #           echo $GOOGLE_SERVICE_ACCOUNT_KEY > ${HOME}/gcp-key.json
+  #           gcloud auth activate-service-account --key-file=${HOME}/gcp-key.json
+  #     - run:
+  #         name: Configure kubectl
+  #         command: |
+  #           gcloud container clusters get-credentials [CLUSTER_NAME] --zone [ZONE] --project [PROJECT_ID]
+  #     - run:
+  #         name: Deploy to 
+  #         command: |
+  #           ssh laimark9003173@35.234.12.24 "docker pull laimark/advertising:cqrs; docker rm -f syncer; docker run -v ~/.sync_env:/app/.env -d laimark/advertising:syncer; docker image prune -f"
 workflows:
   build-and-test:
     jobs:
@@ -100,6 +101,14 @@ workflows:
             branches:
               only:
                 - main
+      - build-and-deploy:
+          requires:
+            - test-go
+          filters:
+            branches:
+              only:
+                - main
+      
     # # - deploy:
     # #     requires:
     #       - test-go
