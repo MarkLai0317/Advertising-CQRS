@@ -62,15 +62,15 @@ jobs:
       - run:
           name: Build Docker image
           command: |
-            docker build -t laimark/advertising:cqrs .
+            docker build -t laimark/advertising:syncer .
             docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
-            docker push laimark/advertising:cqrs
+            docker push laimark/advertising:syncer
       
       # Step 3: Deploy to Kubernetes
       - run:
           name: Deploy to VM
           command: |
-             ssh laimark9003173@35.234.12.24 "docker pull laimark/advertising:cqrs; docker rm -f syncer; docker run -v ~/.sync_env:/app/.env -d laimark/advertising:syncer; docker image prune -f"
+             ssh laimark9003173@35.234.12.24 "docker pull laimark/advertising:syncer; docker rm -f syncer; docker run --name syncer -v ~/.sync_env:/app/.env --net clustur_network -d laimark/advertising:syncer; docker image prune -f"
 
   # deploy:
   #   docker:
