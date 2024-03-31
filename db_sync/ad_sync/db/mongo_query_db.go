@@ -15,9 +15,10 @@ import (
 type MongoQueryDB struct {
 	mongoClient *mongo.Client
 	collection  string
+	dbName      string
 }
 
-func NewMongoQueryDB(uri, collection string) (*MongoQueryDB, *mongo.Client, error) {
+func NewMongoQueryDB(uri, dbName, collection string) (*MongoQueryDB, *mongo.Client, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
@@ -25,13 +26,17 @@ func NewMongoQueryDB(uri, collection string) (*MongoQueryDB, *mongo.Client, erro
 		return nil, nil, fmt.Errorf("error connecting to mongo: %w", err)
 
 	}
-	return &MongoQueryDB{mongoClient: client, collection: collection}, client, nil
+	return &MongoQueryDB{mongoClient: client, dbName: dbName, collection: collection}, client, nil
 }
 
 func (db *MongoQueryDB) Write(adSlice []*domain.Advertisement) error {
+	if len(adSlice) == 0 {
+		return nil
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	collection := db.mongoClient.Database("advertising").Collection(db.collection)
+	collection := db.mongoClient.Database(db.dbName).Collection(db.collection)
 	adsInterface := make([]interface{}, len(adSlice))
 	for i, v := range adSlice {
 		adsInterface[i] = v
@@ -47,7 +52,7 @@ func (db *MongoQueryDB) Write(adSlice []*domain.Advertisement) error {
 func (db *MongoQueryDB) Read(parentCtx context.Context) ([]*domain.Advertisement, error) {
 	ctx, cancel := context.WithTimeout(parentCtx, 10*time.Second)
 	defer cancel()
-	collection := db.mongoClient.Database("advertising").Collection(db.collection)
+	collection := db.mongoClient.Database(db.dbName).Collection(db.collection)
 
 	cursor, err := collection.Find(ctx, bson.D{})
 	if err != nil {

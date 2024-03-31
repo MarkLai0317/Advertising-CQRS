@@ -22,6 +22,10 @@ func TestAdSynchronizerIntegrationTestSuite(t *testing.T) {
 	suite.Run(t, &AdSynchronizerIntegrationTestSuite{})
 }
 
+const dbName = "advertising"
+const allAdCollection = "all_advertisement"
+const activeAdCollection = "active_advertisement"
+
 func (its *AdSynchronizerIntegrationTestSuite) SetupSuite() {
 	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI("mongodb://mark:markpwd@localhost:27017"))
 	its.Assert().NoError(err)
@@ -33,25 +37,25 @@ func (its *AdSynchronizerIntegrationTestSuite) TearDownSuite() {
 }
 
 func (its *AdSynchronizerIntegrationTestSuite) SetupTest() {
-	its.Require().NoError(its.testMongoClient.Database("advertising").Collection("active_advertisement").Drop(context.Background()))
-	its.Require().NoError(its.testMongoClient.Database("advertising").Collection("all_advertisement").Drop(context.Background()))
+	its.Require().NoError(its.testMongoClient.Database(dbName).Collection(activeAdCollection).Drop(context.Background()))
+	its.Require().NoError(its.testMongoClient.Database(dbName).Collection(allAdCollection).Drop(context.Background()))
 }
 
 func (its *AdSynchronizerIntegrationTestSuite) TestAdSynchronizer_SyncDB_active_db_empty() {
 	// setup
-	_, err := its.testMongoClient.Database("advertising").Collection("all_advertisement").InsertOne(context.Background(), bson.D{{"_id", "1"}, {"startAt", time.Now().Add(-time.Hour)}, {"endAt", time.Now().Add(time.Hour)}})
+	_, err := its.testMongoClient.Database(dbName).Collection(allAdCollection).InsertOne(context.Background(), bson.D{{"_id", "1"}, {"startAt", time.Now().Add(-time.Hour)}, {"endAt", time.Now().Add(time.Hour)}})
 	its.Require().NoError(err)
-	_, err = its.testMongoClient.Database("advertising").Collection("all_advertisement").InsertOne(context.Background(), bson.D{{"_id", "2"}, {"startAt", time.Now().Add(-time.Hour)}, {"endAt", time.Now().Add(time.Hour)}})
+	_, err = its.testMongoClient.Database(dbName).Collection(allAdCollection).InsertOne(context.Background(), bson.D{{"_id", "2"}, {"startAt", time.Now().Add(-time.Hour)}, {"endAt", time.Now().Add(time.Hour)}})
 	its.Require().NoError(err)
-	_, err = its.testMongoClient.Database("advertising").Collection("all_advertisement").InsertOne(context.Background(), bson.D{{"_id", "3"}, {"startAt", time.Now().Add(-time.Hour)}, {"endAt", time.Now().Add(time.Hour)}})
+	_, err = its.testMongoClient.Database(dbName).Collection(allAdCollection).InsertOne(context.Background(), bson.D{{"_id", "3"}, {"startAt", time.Now().Add(-time.Hour)}, {"endAt", time.Now().Add(time.Hour)}})
 	its.Require().NoError(err)
-	_, err = its.testMongoClient.Database("advertising").Collection("all_advertisement").InsertOne(context.Background(), bson.D{{"_id", "4"}, {"startAt", time.Now().Add(time.Hour)}, {"endAt", time.Now().Add(2 * time.Hour)}})
+	_, err = its.testMongoClient.Database(dbName).Collection(allAdCollection).InsertOne(context.Background(), bson.D{{"_id", "4"}, {"startAt", time.Now().Add(time.Hour)}, {"endAt", time.Now().Add(2 * time.Hour)}})
 	its.Require().NoError(err)
 
-	commandDB, mongoClient, err := db.NewMongoCommandDB("mongodb://mark:markpwd@localhost:27017", "all_advertisement")
+	commandDB, mongoClient, err := db.NewMongoCommandDB("mongodb://mark:markpwd@localhost:27017", dbName, allAdCollection)
 	its.Assert().NoError(err)
 	defer mongoClient.Disconnect(context.Background())
-	queryDB, mongoClient, err := db.NewMongoQueryDB("mongodb://mark:markpwd@localhost:27017", "active_advertisement")
+	queryDB, mongoClient, err := db.NewMongoQueryDB("mongodb://mark:markpwd@localhost:27017", dbName, activeAdCollection)
 	its.Assert().NoError(err)
 	defer mongoClient.Disconnect(context.Background())
 
@@ -60,7 +64,7 @@ func (its *AdSynchronizerIntegrationTestSuite) TestAdSynchronizer_SyncDB_active_
 	adSynchronizer.SyncDB()
 
 	//verify
-	cursor, err := its.testMongoClient.Database("advertising").Collection("active_advertisement").Find(context.Background(), bson.D{})
+	cursor, err := its.testMongoClient.Database(dbName).Collection(activeAdCollection).Find(context.Background(), bson.D{})
 	its.Assert().NoError(err)
 	var adSlice []*domain.Advertisement
 	err = cursor.All(context.Background(), &adSlice)
@@ -73,25 +77,25 @@ func (its *AdSynchronizerIntegrationTestSuite) TestAdSynchronizer_SyncDB_active_
 
 func (its *AdSynchronizerIntegrationTestSuite) TestAdSynchronizer_SyncDB_active_db_exists_data() {
 	// setup all_advertisement
-	all_collection := "all_advertisement"
-	_, err := its.testMongoClient.Database("advertising").Collection(all_collection).InsertOne(context.Background(), bson.D{{"_id", "1"}, {"startAt", time.Now().Add(-time.Hour)}, {"endAt", time.Now().Add(time.Hour)}})
+
+	_, err := its.testMongoClient.Database(dbName).Collection(allAdCollection).InsertOne(context.Background(), bson.D{{"_id", "1"}, {"startAt", time.Now().Add(-time.Hour)}, {"endAt", time.Now().Add(time.Hour)}})
 	its.Require().NoError(err)
-	_, err = its.testMongoClient.Database("advertising").Collection(all_collection).InsertOne(context.Background(), bson.D{{"_id", "2"}, {"startAt", time.Now().Add(-time.Hour)}, {"endAt", time.Now().Add(time.Hour)}})
+	_, err = its.testMongoClient.Database(dbName).Collection(allAdCollection).InsertOne(context.Background(), bson.D{{"_id", "2"}, {"startAt", time.Now().Add(-time.Hour)}, {"endAt", time.Now().Add(time.Hour)}})
 	its.Require().NoError(err)
-	_, err = its.testMongoClient.Database("advertising").Collection(all_collection).InsertOne(context.Background(), bson.D{{"_id", "3"}, {"startAt", time.Now().Add(-time.Hour)}, {"endAt", time.Now().Add(time.Hour)}})
+	_, err = its.testMongoClient.Database(dbName).Collection(allAdCollection).InsertOne(context.Background(), bson.D{{"_id", "3"}, {"startAt", time.Now().Add(-time.Hour)}, {"endAt", time.Now().Add(time.Hour)}})
 	its.Require().NoError(err)
-	_, err = its.testMongoClient.Database("advertising").Collection(all_collection).InsertOne(context.Background(), bson.D{{"_id", "4"}, {"startAt", time.Now().Add(time.Hour)}, {"endAt", time.Now().Add(2 * time.Hour)}})
+	_, err = its.testMongoClient.Database(dbName).Collection(allAdCollection).InsertOne(context.Background(), bson.D{{"_id", "4"}, {"startAt", time.Now().Add(time.Hour)}, {"endAt", time.Now().Add(2 * time.Hour)}})
 	its.Require().NoError(err)
 
 	// setup active_advertisement
-	active_collection := "active_advertisement"
-	_, err = its.testMongoClient.Database("advertising").Collection(active_collection).InsertOne(context.Background(), bson.D{{"_id", "1"}, {"startAt", time.Now().Add(-time.Hour)}, {"endAt", time.Now().Add(time.Hour)}})
+	active_collection := activeAdCollection
+	_, err = its.testMongoClient.Database(dbName).Collection(active_collection).InsertOne(context.Background(), bson.D{{"_id", "1"}, {"startAt", time.Now().Add(-time.Hour)}, {"endAt", time.Now().Add(time.Hour)}})
 	its.Require().NoError(err)
 
-	commandDB, mongoClient, err := db.NewMongoCommandDB("mongodb://mark:markpwd@localhost:27017", "all_advertisement")
+	commandDB, mongoClient, err := db.NewMongoCommandDB("mongodb://mark:markpwd@localhost:27017", dbName, allAdCollection)
 	its.Assert().NoError(err)
 	defer mongoClient.Disconnect(context.Background())
-	queryDB, mongoClient, err := db.NewMongoQueryDB("mongodb://mark:markpwd@localhost:27017", "active_advertisement")
+	queryDB, mongoClient, err := db.NewMongoQueryDB("mongodb://mark:markpwd@localhost:27017", dbName, activeAdCollection)
 	its.Assert().NoError(err)
 	defer mongoClient.Disconnect(context.Background())
 
@@ -100,7 +104,7 @@ func (its *AdSynchronizerIntegrationTestSuite) TestAdSynchronizer_SyncDB_active_
 	adSynchronizer.SyncDB()
 
 	//verify
-	cursor, err := its.testMongoClient.Database("advertising").Collection("active_advertisement").Find(context.Background(), bson.D{})
+	cursor, err := its.testMongoClient.Database(dbName).Collection(activeAdCollection).Find(context.Background(), bson.D{})
 	its.Assert().NoError(err)
 	var adSlice []*domain.Advertisement
 	err = cursor.All(context.Background(), &adSlice)

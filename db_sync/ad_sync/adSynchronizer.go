@@ -81,7 +81,7 @@ func (s *AdSynchronizer) SyncDB() error {
 		s.existAdSet = make(map[string]*domain.Advertisement)
 		for _, ad := range queryDBAdSlice {
 			s.existAdSet[ad.Id] = ad
-			log.Printf("ad id: %v\n", ad.Id)
+			//log.Printf("ad id: %v\n", ad.Id)
 		}
 		return nil
 	})
@@ -103,14 +103,14 @@ func (s *AdSynchronizer) SyncDB() error {
 	// store the new data that is not in QueryDB
 	newAdSlice := make([]*domain.Advertisement, 0, 1000)
 	for _, ad := range s.commandDBAdSlice {
-		log.Printf("command ad id: %v\n", ad.Id)
+		//log.Printf("command ad id: %v\n", ad.Id)
 		if _, ok := s.existAdSet[ad.Id]; !ok {
 			newAdSlice = append(newAdSlice, ad)
-			log.Printf("new ad id: %v\n", ad.Id)
+			//log.Printf("new ad id: %v\n", ad.Id)
 		}
 	}
 
-	log.Printf("newAdSlice: %v\n", newAdSlice)
+	log.Printf("newAdSlice: %v\n", len(newAdSlice))
 	// write the new data to QueryDB
 	if err := s.queryDB.Write(newAdSlice); err != nil {
 		return fmt.Errorf("err writing QueryDB in SyncDB: %w", err)

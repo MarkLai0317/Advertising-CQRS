@@ -14,9 +14,10 @@ import (
 type MongoCommandDB struct {
 	mongoClient *mongo.Client
 	collection  string
+	dbName      string
 }
 
-func NewMongoCommandDB(uri, collection string) (*MongoCommandDB, *mongo.Client, error) {
+func NewMongoCommandDB(uri, dbName, collection string) (*MongoCommandDB, *mongo.Client, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -25,7 +26,7 @@ func NewMongoCommandDB(uri, collection string) (*MongoCommandDB, *mongo.Client, 
 		return nil, nil, fmt.Errorf("error connecting to mongo: %w", err)
 
 	}
-	return &MongoCommandDB{mongoClient: client, collection: collection}, client, nil
+	return &MongoCommandDB{mongoClient: client, dbName: dbName, collection: collection}, client, nil
 }
 
 func (db *MongoCommandDB) Read(parentCtx context.Context) ([]*domain.Advertisement, error) {
