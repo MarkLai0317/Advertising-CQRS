@@ -44,7 +44,7 @@ func main() {
 
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	go db_sync.SetIntervelSyncDB(synchrorizer, time.Duration(secNum)*time.Second)
+	go db_sync.SetIntervalSyncDB(synchrorizer, time.Duration(secNum)*time.Second)
 	wg.Wait()
 
 	// commandclientDB.Disconnect(context.Background())

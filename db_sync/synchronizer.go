@@ -9,7 +9,7 @@ type Synchronizer interface {
 	SyncDB() error
 }
 
-func SetIntervelSyncDB(s Synchronizer, interval time.Duration) {
+func SetIntervalSyncDB(s Synchronizer, interval time.Duration) {
 
 	for {
 		err := s.SyncDB()

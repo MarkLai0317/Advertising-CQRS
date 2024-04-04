@@ -30,7 +30,6 @@ WORKDIR /app
 COPY --from=builder /app/db-syncer /app
 
 # Expose the port your application listens on
-EXPOSE 80
 
 # Command to run the executable
 CMD ["./db-syncer"]
