@@ -1,5 +1,7 @@
 # Data-Synchronizer
 
+
+
 ## purpose of this repo
 
 - sync the data between DB for read (QueryDB) and DB for write(CommandDB) to maintain conosistency.
@@ -31,7 +33,7 @@
 - init `AdSynchronizer` with injection of `MongoCommandDB`, `MongoQueryDB`
 - call `SetIntervalSyncDB` with `AdSynchronizer` as parameter to sync data every interval
 
-## Test
+## Test (CircleCI)
 
 ### integration test
 
