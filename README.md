@@ -41,3 +41,7 @@
     ```
     gotestsum --format testname --junitfile junit.xml -- -gcflags=all=-l -p 1 -v -cover ./...
     ```
+
+## How to run this project
+* it's included in the docker-compose/docker-compose-all.yml in [Advertising repo](https://github.com/MarkLai0317/Advertising?tab=readme-ov-file#how-to-run-this-project) which needs `.sync_env`.
+
